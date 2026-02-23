@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User as AppUser;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class User extends Controller
 {
@@ -13,7 +14,23 @@ class User extends Controller
      */
     public function index()
     {
-        //
+        $wallets = DB::table("Wallets")
+            ->select("name", "description", "balance", "created_at")
+            ->where("user_id", auth("sanctum")->id())
+            ->get();
+        $balance = DB::table("Wallets")
+
+            ->where("user_id", auth("sanctum")->id())
+            ->sum("balance");
+        return response()->json(
+            [
+                "Message" => "User Profile",
+                "errors" => false,
+                "wallets" => $wallets,
+                "total_balance" => $balance,
+            ],
+            200,
+        );
     }
 
     /**
