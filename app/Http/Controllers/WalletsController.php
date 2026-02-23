@@ -2,64 +2,84 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Wallets;
+use App\Models\Wallets as UserWallet;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class WalletsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $wallets = DB::table("Wallets")
+            ->select("name", "description", "balance", "created_at")
+            ->where("user_id", auth("sanctum")->id())
+            ->get();
+        return response()->json(
+            [
+                "Message" => "Wallets retrieved successfully",
+                "errors" => false,
+                "data" => $wallets,
+            ],
+            200,
+        );
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        try {
+            $validated = $request->validate([
+                "name" => "required|min:2|max:255",
+                "description" => "required|string|min:5",
+            ]);
+
+            $new_wallet = new UserWallet();
+            $new_wallet->user_id = auth("sanctum")->id();
+            $new_wallet->name = $request->name;
+            $new_wallet->description = $request->description;
+            $new_wallet->save();
+
+            return response()->json(
+                [
+                    "Message" => "Created Wallet Succesfully",
+                    "errors" => false,
+                ],
+                200,
+            );
+        } catch (ValidationException $e) {
+            return response()->json(
+                [
+                    "message" => "Validation failed",
+                    "errors" => $e->errors(),
+                ],
+                422,
+            );
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function show($wallet, Request $request)
     {
-        //
-    }
+        $userWallet = DB::table("Wallets")
+            ->where("user_id", auth("sanctum")->id())
+            ->where("name", $wallet)
+            ->get();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Wallets $wallets)
-    {
-        //
-    }
+        if ($userWallet->isEmpty()) {
+            return response()->json(
+                [
+                    "message" => "Forbidden",
+                    "error" => "You do not own this wallet",
+                ],
+                403,
+            );
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Wallets $wallets)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Wallets $wallets)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Wallets $wallets)
-    {
-        //
+        return response()->json(
+            [
+                "message" => "Forbidden",
+                "return" => $userWallet,
+            ],
+            200,
+        );
     }
 }
