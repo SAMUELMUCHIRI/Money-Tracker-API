@@ -14,7 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: "/up",
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            "api.auth" => \App\Http\Middleware\api_auth::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (
@@ -27,6 +29,18 @@ return Application::configure(basePath: dirname(__DIR__))
                         "message" => "Record not found.",
                     ],
                     404,
+                );
+            }
+        });
+
+        $exceptions->render(function (Exception $e, Request $request) {
+            if ($request->is("api/*")) {
+                return response()->json(
+                    [
+                        "message" => "Error occurred.",
+                        "error" => $e->getMessage(),
+                    ],
+                    400,
                 );
             }
         });
