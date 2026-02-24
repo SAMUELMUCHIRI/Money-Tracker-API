@@ -2,61 +2,78 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Wallets;
 use Illuminate\Http\Request;
 use App\Models\Transactions;
+
+use Illuminate\Support\Facades\DB;
 class TransactionsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $validated = $request->validate([
+            "type" => "required|string|in:income,expense",
+            "amount" => "required|integer|min:0.01",
+            "description" => "required|string|min:4",
+            "wallet_name" => "required|string|min:3",
+        ]);
+
+        $wallet = DB::table("Wallets")
+            ->select("id")
+            ->where("name", $validated["wallet_name"])
+            ->where("user_id", auth("sanctum")->id())
+            ->first();
+        if (!$wallet) {
+            return response()->json(["error" => "Wallet not found"], 404);
+        }
+
+        $transaction = new Transactions([
+            "type" => $validated["type"],
+            "amount" => $validated["amount"],
+            "description" => $validated["description"],
+            "wallet_id" => $wallet->id,
+        ]);
+
+        if ($transaction->type === "expense") {
+            DB::table("Wallets")
+                ->where("id", $wallet->id)
+                ->decrement("balance", $validated["amount"]);
+        } else {
+            DB::table("Wallets")
+                ->where("id", $wallet->id)
+                ->increment("balance", $validated["amount"]);
+        }
+
+        $transaction->save();
+
+        return response()->json($transaction, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         //
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Transactions $Transactions)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Transactions $Transactions)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Transactions $Transactions)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Transactions $Transactions)
     {
         //
