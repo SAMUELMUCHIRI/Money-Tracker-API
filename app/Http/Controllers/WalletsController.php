@@ -60,6 +60,7 @@ class WalletsController extends Controller
     public function show($wallet, Request $request)
     {
         $userWallet = DB::table("Wallets")
+            ->select("id", "name", "description", "balance")
             ->where("user_id", auth("sanctum")->id())
             ->where("name", $wallet)
             ->get();
@@ -68,16 +69,22 @@ class WalletsController extends Controller
             return response()->json(
                 [
                     "message" => "Forbidden",
-                    "error" => "You do not own this wallet",
+                    "error" => "Wallet does not exist",
                 ],
                 403,
             );
         }
 
+        $walletTransactions = DB::table("Transactions")
+            ->select("id", "amount", "type", "description", "created_at")
+            ->where("wallet_id", $userWallet[0]->id)
+            ->get();
+
         return response()->json(
             [
-                "message" => "Forbidden",
-                "return" => $userWallet,
+                "message" => "Success Fully Retrieved Wallet",
+                "wallet" => $userWallet,
+                "transactions" => $walletTransactions,
             ],
             200,
         );
