@@ -1,59 +1,212 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Here’s a clean, practical README you can use for your project.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+---
 
-## About Laravel
+# Money Tracker API
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Simple REST API for user authentication, wallet management, and transaction tracking.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Version
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+`1.0.0`
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Base URL
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```
+/api
+```
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Health Check
 
-### Premium Partners
+### GET `/api/health`
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Check if the API is running.
 
-## Contributing
+**Response**
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```json
+{
+  "status": "ok"
+}
+```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Authentication
 
-## Security Vulnerabilities
+### POST `/api/register`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Register a new user.
 
-## License
+**Body**
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password"
+}
+```
+
+---
+
+### POST `/api/login`
+
+Authenticate a user and receive an access token.
+
+**Body**
+
+```json
+{
+  "email": "john@example.com",
+  "password": "password"
+}
+```
+
+**Response**
+
+```json
+{
+    "token": "3|uWm4dSCSPl0YgxFGq9LH367jt9Om4WNL0kUjxvmb6003b94c",
+    "user": {
+        "id": 1,
+        "name": "sam",
+        "email": "email@example.com",
+        "email_verified_at": null,
+        "created_at": "2026-02-23T22:27:50.000000Z",
+        "updated_at": "2026-02-23T22:27:50.000000Z"
+    }
+}
+```
+
+---
+
+## Profile
+
+### GET `/api/profile`
+
+Get the authenticated user’s profile.
+
+**Headers**
+
+```
+Authorization: Bearer {token}
+```
+
+---
+
+## Wallets
+
+### POST `/api/wallet`
+
+Create a new wallet.
+
+**Headers**
+
+```
+Authorization: Bearer {token}
+```
+
+**Body**
+
+```json
+{
+  "name": "Main Wallet",
+  "description": "My main wallet"
+}
+```
+
+---
+
+### GET `/api/wallet`
+
+List all wallets for the authenticated user.
+
+**Headers**
+
+```
+Authorization: Bearer {token}
+```
+
+---
+
+### GET `/api/wallet/{wallet}`
+
+Get details of a specific wallet.
+
+**Headers**
+
+```
+Authorization: Bearer {token}
+```
+
+---
+
+## Transactions
+- Transaction type can be either `income` or `expense`.
+- 
+### POST `/api/transactions`
+
+Create a transaction.
+
+**Headers**
+
+```
+Authorization: Bearer {token}
+```
+
+**Body**
+
+```json
+{
+  "wallet_name": "Main Wallet",
+  "amount": 500,
+  "type": "income",
+  "description": "Salary"
+}
+```
+
+---
+
+## Validation Rules
+
+* `amount` must be positive (`min:1` or `min:0.01` if decimal).
+* Authentication required for protected routes.
+* Wallet must belong to the authenticated user.
+
+---
+
+## Tech Stack
+
+* Laravel
+* MySQL
+* RESTful architecture
+* Token-based authentication
+
+---
+
+## Running the Project
+
+```bash
+git clone https://github.com/SAMUELMUCHIRI/Money-Tracker-API
+cd Money-Tracker-API
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+composer run dev
+```
+
+---
+
+## Notes
+
+* All responses are JSON.
+* Protected routes require a valid Bearer token.
+
+
+---
