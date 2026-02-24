@@ -196,10 +196,28 @@ git clone https://github.com/SAMUELMUCHIRI/Money-Tracker-API
 cd Money-Tracker-API
 composer install
 cp .env.example .env
-php artisan key:generate
-php artisan migrate
-composer run dev
 ```
+
+### Create SQLite Database File
+
+#### Linux
+```bash
+touch database/database.sqlite
+```
+#### Windows CMD 
+```bash
+type nul >  database/database.sqlite
+```
+#### Windows Powershell
+```bash
+New-Item database/database.sqlite -ItemType File
+```
+## Testing (WHILE RUNNING)
+
+```bash
+php artisan test
+```
+
 
 ---
 
