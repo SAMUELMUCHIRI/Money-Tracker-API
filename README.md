@@ -1,7 +1,3 @@
-Here’s a clean, practical README you can use for your project.
-
----
-
 # Money Tracker API
 
 Simple REST API for user authentication, wallet management, and transaction tracking.
